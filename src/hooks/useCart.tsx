@@ -23,18 +23,58 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart');
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
-
-    return [];
+    return JSON.parse(storagedCart || '[]');
   });
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
+      const { amount: stockedAmount }: Stock = await api.get(
+        `stock/${productId}`
+      );
+
+      const storagedCart = [...cart];
+
+      const storagedProduct = storagedCart.find(
+        product => product.id === productId
+      );
+
+      if (storagedProduct) {
+        // if ( stockedAmount > storagedProduct.amount ) {
+        //   console.log('pode atualizar')
+        // }
+        console.log('pode atualizar');
+      } else {
+        const product = await api.get<Product>(`products/${productId}`);
+        
+        if(product.data.amount){
+          const newProduct = { ...product.data, amount: 1 }
+
+          storagedCart.push(newProduct);
+          setCart(storagedCart)
+          localStorage.setItem('@RocketShoes:cart', JSON.stringify(storagedCart));
+        }
+
+      }
+
+      // if (oi.length === 0) {
+      //   if (stockedProduct.data.amount > 0) {
+      //     let storagedProducts = localStorage.getItem('@RocketShoes:cart');
+
+      //     let teste = JSON.parse(storagedProducts || '[]')
+
+      //     teste.push(response.data)
+
+      //     localStorage.setItem('@RocketShoes:cart', JSON.stringify(teste))
+
+      //   }
+      // } else {
+      //   updateProductAmount({ productId: productId, amount: response.data.amount });
+      // }
+
+
+
     } catch {
       // TODO
     }
@@ -42,7 +82,18 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      let storagedProducts: Product[] = JSON.parse(
+        localStorage.getItem('@RocketShoes:cart') || '[]'
+      );
+      console.log(cart)
+      const teste = storagedProducts.filter(
+        product => product.id !== productId
+      )
+      setCart(
+        teste
+      )
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart))
+      console.log(teste)
     } catch {
       // TODO
     }
@@ -54,6 +105,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   }: UpdateProductAmount) => {
     try {
       // TODO
+      console.log(productId, amount)
     } catch {
       // TODO
     }
